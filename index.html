@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="root" >
+  <meta name="description" content="WebSQL Shopping Comparison app v1">
+  <title>Shopping Compare</title>
+  <link href="lib/bootstrap.3.3.4.min.css" rel="stylesheet" type="text/css">
+  <link href='lib/fancybox/source/jquery.fancybox.css' rel='stylesheet'>
+  <style>
+   .container {margin-top:15px;}
+   .hidden1 { display: none;}
+  </style>
+ </head>
+ <body> 
+  <div class='container'>
+   <div class='row'>
+    <div class='col-md-12'>
+     <h4>My Shopping Compare v1</h4>
+		 <a href='#divRepo' class="fancybox2 btn btn-sm btn-default" title="List Stores and Items">Items</a>
+		 <a href='#divAddCart' class="fancybox btn btn-sm btn-primary" title="Specify item price at store">+ To Cart</a>
+		 <a href='#divAddStore' class="fancybox btn btn-sm btn-primary" title="Add Store">+ Store</a>
+		 <a href='#divAddItem' class="fancybox btn btn-sm btn-primary" title="Add item">+ Item</a>
+		 <a href='#divHelp' class="fancybox btn btn-sm btn-default" title="Help">?</a>
+		 <a href='#' class="btn btn-sm btn-success" onclick="dataProc(2); return false;" title="Export Data">E</a>	
+		 <a href='#' class="btn btn-sm btn-primary" onclick="dataProc(1); return false;" title="Import Data">I</a>
+		 <a href='#' class="btn btn-sm btn-danger hidden1" onclick="clearCart(); return false;" title="Clear Cart">X</a>		 
+     <p></p>
+
+	 <noscript>Javascript has been disabled in your browser.</noscript>
+	 
+	 <div class='table-responsive'>
+	  <table class='table table-hover table-striped table-bordered' id='tableCartItems'>
+	   <thead>
+				     <tr>
+				      <th></th>
+				      <th>Items with Prices</th>
+				     </tr>	   
+	   </thead>
+	   <tbody></tbody>
+	  </table>
+	 </div> 
+
+		 <div id='divAddStore' class="hidden1">
+		 </div> 
+
+		 <div id='divEditStore' class="hidden1">
+		 </div> 
+
+		 <div id='divAddItem' class="hidden1">
+		 </div> 
+
+		 <div id='divEditItem' class="hidden1">
+		 </div> 
+
+		 <div id='divEditCartItem' class="hidden1">
+			<div class='container'>
+			 <div class='row'>
+				<div class='col-md-6'>
+						 
+				<form class='form-horizontal' onsubmit="return validate('editCartItem');">
+					<input type='hidden' id='cartEditRowId'>
+					<input type='hidden' id='cartEditItemId'>
+					 <div class='form-group'>
+								 <label class='control-label col-md-3' for='originalStoreId'>Store</label>
+		                         <div class='col-md-6'><select class='form-control' id='originalStoreId'></select></div>
+					 </div>
+					<div class='form-group'>
+								 <label class='control-label col-md-3' for='originalPrice'>Price</label>
+		                         <div class='col-md-6'><input type='currency' id='originalPrice' class='form-control'></div>
+					</div>
+					<div class='form-group'>
+								 <label class='control-label col-md-3'></label>
+		          <div class='col-md-6'><input class='btn btn-sm btn-primary' value='Update' type='submit'> <input  class='btn btn-sm btn-default' value='Clear' type='reset'></div>
+					</div>
+				</form>	
+			</div></div></div>	 
+		 </div> 
+		 
+		 <div id='divAddCart' class="hidden1">
+			<div class='container'>
+			 <div class='row'>
+				<div class='col-md-6'>
+					<form class='form-horizontal' onsubmit="return validate('addCart');">
+					 <div class='form-group'>
+								 <label class='control-label col-md-3' for='storeId'>Store</label>
+		                         <div class='col-md-6'><select class='form-control' id='storeId'></select></div>
+					 </div>
+					 <div class='form-group'>
+								 <label class='control-label col-md-3' for='itemId'>Item</label>
+		                         <div class='col-md-6'><select class='form-control' id='itemId'></select></div>
+					 </div>
+					<div class='form-group'>
+								 <label class='control-label col-md-3' for='storeId'>Price</label>
+		                         <div class='col-md-6'><input type='currency' id='price' class='form-control'></div>
+					</div>
+					<div class='form-group'>
+								 <label class='control-label col-md-3'></label>
+		          <div class='col-md-6'><input class='btn btn-sm btn-primary' value='Add to cart' type='submit'> <input  class='btn btn-sm btn-default' value='Clear' type='reset'></div>
+					</div>
+				</form>
+			  </div>
+			</div>
+		  </div>		 
+		 </div> 
+
+		 <div id='divEditCart' class="hidden1">
+		 </div> 
+
+		 <div id='divProps' class="hidden1">
+		 </div> 
+		 
+		 <div id='divRepo' class="hidden1">
+		  <div class="container">
+		   <div class="row">		 
+		   	<div class="col-md-12">
+				  <div class="table-responsive'">
+				   <table class="table" id='tableStores'>
+				    <tbody>
+				    </tbody>
+				   </table>
+				  </div>
+				 </div>
+		    	<div class="col-md-12">
+		   	<div class="table-responsive'">
+		   		<table class="table" id='tableItems'>
+		    			<tbody></tbody>
+		   		</table>
+		  		</div>
+		  		 </div>
+		  		</div>
+		  	 </div>
+			</div>		  
+
+		 <div id='divImporting' class="hidden1">
+			<div class='container'>
+			<div class='row'>
+			<div class='col-md-12'>
+		 	<p id='dataProcWork'>Calculating work to be done...</p>
+		  	</div>
+		  	</div>
+		  	</div>		 	
+		 </div> 
+		 		 		 
+		 <div id='divHelp' class="hidden1">
+			<div class='container'>
+			<div class='row'>
+			<div class='col-md-12'>								 
+		 	<h4>Welcome to Shopping Compare</h4>
+		 	<p>Create a shopping comparison list: in order to compare prices for items from different stores.</p>
+		 	<p>To get started: add your favorite stores and common household items by clicking the appropriate button.</p>
+		 	<p>P.S. stores and items do not appear on the main list, they only appear when adding an item to your cart. </p>
+		 	<p>After your stores and items are set, you can then add an item to the cart by selecting the store, the item and setting its price.</p>
+		 	<p>Sync between browsers: your WebSQL data only exists in the browser you are using, to get around that, export and import your data as JSON.</p>
+		 	<p><b>Import</b> - loads JSON data from cart.json on your server.</p>
+		 	<p><b>Export</b> - writes your data to cart.json on your server.</p>
+		 	<p>Once inside a store, you can compare & update your prices. Happy shopping.</p>
+		 	<p style='font-weight:bold'>Created by William Sengdara @ 2019</p>
+		  	</div>
+		  	</div>
+		  	</div>		 	
+		 </div> 	
+		 	 
+     </div>
+
+   </div> <!-- col-md-12 -->
+  </div> <!-- row -->
+ </div><!-- container -->
+
+ <script src="lib/jquery.1.11.1.min.js"></script>
+ <script src="lib/bootstrap.3.3.4.min.js"></script>
+ <script src='schema.websql.js'></script>
+ <script>
+  var g_tableCart = null;
+  var g_divAddCart  = null;
+  var g_divAddItem  = null;
+  var g_divEditItem = null;
+  var g_divProps    = null;
+  var g_divRepo     = null;
+  var g_divEditCartItem = null;
+  var g_dataProcWork = null;
+  
+  var g_db = new Schema();
+  
+  let url_default = "http://192.168.8.103/shopping-compare/cart.php";
+  var url = "";
+  
+  // handler for data import/export
+  var dataProc = function (proc) {
+		switch(proc) {
+			case 1: // import
+					if (! url) url = url_default;					
+					url = prompt("Import data from your server?", url);
+					
+					if (url){
+
+						$.ajax({
+						    url: url,
+						    method: 'POST',
+						    data: {'request': 'import', 'data':'cart.php needs this to be non-empty'},
+						    success: function (resp) {
+						    		try {
+						    			let j = JSON.parse(resp);
+						    			console.log(j)
+						    			
+						    			if (j.stores == undefined || j.items == undefined || j.cart == undefined){
+						    				alert("Failed to import data")
+						    			} else {
+						    				$.fancybox.open({href:'#divImporting', 'title': 'Importing Data', helpers: { overlay: { closeClick: false}}});
+						    				// we need to call refreshAll() only after tx.executeSql is done
+						    				// otherwise we refresh while it's still busy, using a counter solves that
+						    				var max = j['stores'].length + j['items'].length + j['cart'].length;
+											var curr = 0; // current progress
+											var perc = 0; // progress percentage
+																	    				
+						    				for (let table in j){
+						    					g_db.clearTable(table, ()=>{
+						    							console.log(`Cleared table ${table}`)
+						    							
+						    							switch (table){
+						    								case 'stores':
+						    								case 'items':
+						    									
+						    									for (let idx=0; idx < j[table].length; idx++){
+						    										let d = j[table][idx];
+						    										
+							    									g_db.rawdb().transaction(function (tx) {
+																		// add it
+																		tx.executeSql(`INSERT INTO ${table} (rowid, name) VALUES (?, ?)`, 
+																						[ parseInt(d.rowid), d.name.toString() ], 
+																						function(tx, results){
+																							curr++
+																							perc = Math.round(curr/max * 100)
+																							dataProcWork.textContent = `${curr} of ${max} items (${perc} % completed)`
+																							
+																							if (curr >= max){
+																								// Nested callbacks are a friggin nightmare!
+																								
+																								dataProcWork.textContent = 'Import complete.'
+																								refreshAll();
+																								$.fancybox.close();
+																							} 																						
+																						});
+																		
+																	});
+						    									}
+			
+						    									break;
+						    									
+						    								case 'cart':
+						    								
+						    									for (let idx=0; idx < j[table].length; idx++){
+						    										let d = j[table][idx];
+						    										
+							    									g_db.rawdb().transaction(function (tx) {
+																		// add it
+																		tx.executeSql(`INSERT INTO ${table} (rowid, store_id, item_id, price) VALUES (?, ?, ?, ?)`, 
+																						[ parseInt(d.rowid), 
+																						  parseInt(d.store_id), 
+																						  parseInt(d.item_id), 
+																						  parseFloat(d.price)], 
+																						function(tx, results){
+																							curr++
+																							perc = Math.round(curr/max * 100)
+																							dataProcWork.textContent = `${curr} of ${max} items (${perc} % completed)`
+																																														
+																							if (curr >= max){
+																								// Nested callbacks are a friggin nightmare!
+																							
+																								dataProcWork.textContent = 'Import complete.'
+																								refreshAll();
+																								$.fancybox.close();
+																							}
+																						});
+																		
+																	});
+						    									}	
+				    								
+						    									break;
+						    							}
+						    						}, 
+						    							(err)=>{console.log(err)});
+						    				}
+						    				
+						    			}
+						    			
+						    		} catch (e){
+						    			alert(e)
+						    		}
+							},
+							error: function (a,b,c) {
+								console.error(a,b,c)
+							}
+						});
+					}			
+				break;
+				
+			case 2: // export
+				var data = {}
+				
+				// returns 3 arrays: stores, items, cart
+				g_db.dataExport((s, i, c)=>{
+					//console.log('Stores',s)
+					//console.log('Items', i)
+					//console.log('Cart',c)
+				
+					//for(let d in s){
+					//	console.log(d, s[d])
+					//}
+				
+					data = {};
+					data.stores = s;
+					data.items = i;
+					data.cart = c;
+
+					let j = JSON.stringify(data)
+					
+					if (! url) url = url_default;
+					url = prompt("Export data to your server?", url);
+					
+					if (url){
+
+						$.ajax({
+						    url: url,
+						    method: 'POST',
+						    data: {request: 'export', data: j},
+						    success: function (resp) {
+								if (resp =='true')
+									alert(`Successfully exported your stores, items and cart data to:\n${url}`)
+								else {
+									alert(resp)	
+								}
+							},
+							error: function (a,b,c) {
+								console.error(a,b,c)
+							}
+						});
+					}
+				}, 
+				(err)=>{
+					console.log(err)
+				})			
+				break;
+		}	
+	}
+	
+  var validate = function(action){
+		var inputs = null;
+
+		switch (action){
+			case 'addItem':
+			case 'editItem':
+				 inputs = ['itemName'];
+
+					for(let idx=0; idx<inputs.length; idx++){
+						let ctl = document.getElementById(inputs[idx]);
+						if (! ctl.value.trim().length){
+							ctl.focus();
+							return false;
+						}
+					}
+
+					g_db.add('items', document.getElementById('itemName').value.trim(), 
+						()=>{
+							document.getElementById('itemName').value = "";
+							$.fancybox.close()
+							refreshAll()
+						}, 
+						()=>{
+							alert(`${action} failed`)
+						});
+
+				 break;
+
+			case 'addStore':
+			case 'editStore':
+				 inputs = ['storeName'];
+
+					for(let idx=0; idx<inputs.length; idx++){
+						let ctl = document.getElementById(inputs[idx]);
+						if (! ctl.value.trim().length){
+							ctl.focus();
+							return false;
+						}
+					}
+					
+					g_db.add('stores', document.getElementById('storeName').value.trim(), 
+						()=>{
+							document.getElementById('storeName').value = "";
+							$.fancybox.close()
+							refreshAll()
+						}, 
+						()=>{
+							alert(`${action} failed`)
+						});
+				 break;
+
+			case 'addCart':
+			case 'editCart':
+				 inputs = ['storeId', 'itemId', 'price'];
+
+					for(let idx=0; idx<inputs.length; idx++){
+						let ctl = document.getElementById(inputs[idx]);
+						if (! ctl.value.trim().length){
+							ctl.focus();
+							return false;
+						}
+					}
+
+					g_db.cartAdd(
+									  document.getElementById('storeId').value,
+									  document.getElementById('itemId').value,  						         
+									  parseFloat(document.getElementById('price').value),
+									  ()=>{
+												document.getElementById('price').value = "";
+												$.fancybox.close()
+									  },
+									  ()=>{
+									  		alert("Failed to add item to cart")
+									  });
+				 break;
+				 
+			case 'editCartItem':
+				 inputs = ['originalStoreId', 'originalPrice'];
+
+					for(let idx=0; idx<inputs.length; idx++){
+						let ctl = document.getElementById(inputs[idx]);
+						if (! ctl.value.trim().length){
+							ctl.focus();
+							return false;
+						}
+					}
+
+					var rowId = parseInt(document
+					.getElementById('cartEditRowId').value);
+					var storeId = parseInt(document
+					.getElementById('originalStoreId').value);						         
+					var itemId=parseInt(document
+					.getElementById('cartEditItemId').value);						  
+					var price = parseFloat(document
+					.getElementById('originalPrice').value);
+
+					g_db.cartEdit(
+									  rowId, storeId, itemId, price,
+									  ()=>{
+												document.getElementById('originalPrice').value = "";
+												$.fancybox.close()
+									  },
+									  (err)=>{
+									  		alert(err)
+									  });
+				 break;
+		}
+
+		refreshAll();
+
+		return false;
+  }
+  
+  var edit = function (table, rowid) {
+		g_db.getItemById(table, rowid, 
+		(named)=>{
+				let item = prompt(`Edit ${named.name}`, named.name);
+		
+				if (! item) return false;
+				
+				g_db.edit(table, rowid, item, 
+							()=>{
+								$.fancybox.close()
+								refreshAll()
+							}, 
+							()=>{
+								alert("Failed to edit the item")
+							})
+		}, 
+		()=>{
+				alert("Failed to fetch item for supplied id boss")
+		});
+  }
+  
+  var remove = function (table, rowid) {
+  		if (! confirm(`Delete item #${rowid} from ${table}?`)) return false;
+  		
+  		g_db.remove(table, rowid, 
+  						()=>{
+								$.fancybox.close()
+								refreshAll()  						
+  						}, 
+  						()=>{
+								alert("Failed to delete the item")  						
+  						})  		
+  }
+  
+  var cart = function (action, rowid) {
+  		switch(action) {
+  			case 'init-edit':
+  					var html = "";  										
+  					let table = 'items'
+  					
+					g_db.cartItemById( rowid, ( item )=>{	
+						console.log('cart item', item)
+						
+						g_db.list('stores', (stores)=>{
+							var storeOptions = "";
+					
+							for (let s in stores){
+								let store = stores[s]
+								selected = store.rowid == item.storeid ? 'selected' : '';
+					          storeOptions += `<option value='${store.rowid}' ${selected}>${store.name}</option>`;
+							}
+							
+							// add to <Select> of Add cart item
+							document.getElementById('cartEditRowId').value = rowid; //hidden field to give us rowId
+
+document.getElementById('cartEditItemId').value = item.itemid; //hidden field to give us rowId
+	document.getElementById('originalStoreId').innerHTML = storeOptions;
+							document.getElementById('originalPrice').value = item.price;
+							$.fancybox.open({href:'#divEditCartItem', title:'Edit Cart Item'});
+						});	
+					}, 
+					(err)=>{
+							alert(err)
+							return false;
+					});
+	
+				
+  				break;
+  				
+  			case 'edit':
+  			
+  				break;
+  				
+  			case 'delete':
+  				if (confirm(`Delete cart record #${rowid}?`)){
+  					g_db.cartRemove(rowid, ()=>{
+  							console.log('Item deleted')
+							$.fancybox.close()
+							refreshAll()
+ 						}, 
+						(err)=>{
+  						console.log(err)
+  					})  				
+  				} else {
+  					console.log('Delete cancelled')
+  				}
+  				break;
+  		}
+  }
+  
+  var clearCart = function () {
+		if (!confirm("Are you sure you would like to clear your cart?"))  	
+  			return;
+  			
+  		g_db.cartClear(()=>{
+  					refreshAll();
+  				}, (err)=>{
+  			})
+  }
+  // get prices for a cart item
+  var itemPrices = function (itemId) {
+		g_db.cartItemPrices(itemId, (prices)=>{
+			var html = `<tr>
+	  						 <td colspan='4' style='font-weight:bold'>Price of ${prices[0].item} @</td>
+	  						</tr>`;
+			  		
+			var idx = 1;
+			
+	  		for(var p in prices){
+	  		   let item = prices[p]
+	  		   
+				var btn_edit = `<a href='#' onclick="cart('init-edit',${item.rowid});" class='btn btn-sm btn-default'>Edit</a>`;
+			   var btn_del  = `<a href='#' onclick="cart('delete',${item.rowid});" class='btn btn-sm btn-danger'>Del</a>`;
+				 	  		   
+	  			html += `<tr>
+	  						 <td>${idx}</td>
+	  						 <td>${item.store}</td>
+	  						 <td>N$ ${item.price}</td>
+	  						 <td>${btn_edit} ${btn_del}</td>
+	  						</tr>`
+	  						
+	  			idx++
+	  		}
+	  		
+	  		g_divProps.innerHTML = `<div class='container'>
+											<div class='row'>
+											<div class='col-md-6'>
+											<div class='table-responsive'>
+											 <table class='table table-bordered table-striped table-hover'>
+							              <tbody>
+							               ${html}
+							              </tbody>
+							             </table>
+							            </div>
+							            </div></div></div>`;
+							            
+			$.fancybox.open({href:'#divProps', title: `Price of ${prices[0].item}`});		
+		}, 
+		()=>{
+			console.log('Failed')
+			alert('Failed to fetch prices for selected item')
+		})
+  }
+  
+  var procItems = function (action, id) {
+		switch (action){
+			case 'edit':
+				confirm(`OK to edit item ${id}`)
+				break;
+				
+			case 'delete':
+				let item = g_items.getByIndex(id);
+				
+				if (confirm(`Delete ${item} from cart?`)){
+					g_cart.removeByIndex(id);
+					refreshAll();
+				}		
+		}  	
+  }
+  var refreshAll = function(){
+  		if (! g_db){
+  			return alert("WebSql failed you hahaha");
+  		}
+
+		g_db.list('stores', function (stores) {
+						var storeOptions = "";
+				
+						for (let s in stores){
+							let store = stores[s]
+				          storeOptions += `<option value='${store.rowid}'>${store.name}</option>`;
+						}
+						
+						// add to <Select> of Add cart item
+						document.getElementById('storeId').innerHTML = storeOptions;
+		
+		});
+		
+		g_db.list('items', function (items) {
+						var itemOptions = "";
+						
+						for (let i in items){
+							let item = items[i]
+							itemOptions += `<option value='${item.rowid}'>${item.name}</option>`;
+						}	
+						
+						// add to <Select> of Add cart item
+						document.getElementById('itemId').innerHTML = itemOptions;		
+		});
+		
+		g_db.cartItems((items)=>{
+			console.log('items', items)
+			
+			idx = 1;
+			var buff = "";
+			for (var c in items){
+				 let item = items[c]
+				 
+				 buff += `<tr>
+			                <td>${idx}</td>
+			                <td><a href='#' onclick="itemPrices(${item.itemid}); return false">${item.item} <span class='badge pull-right'>${item.stores}</span></a></td>`;
+
+	
+				 var btn_edit = `<a href='#' onclick="cart('edit',${item.rowid});" class='btn btn-sm btn-default'>Edit</a>`;
+				 var btn_del  = `<a href='#' class='text-danger' onclick="procItems('delete',${item.rowid});" class='btn btn-sm btn-warning'>Delete Item</a>`;
+	
+			     buff += `</tr>`;
+				 idx++
+			}
+
+			document.getElementById('tableCartItems').tBodies[0].innerHTML = buff;		
+					
+		}, ()=>{
+			document.getElementById('tableCartItems').tBodies[0].innerHTML = `<tr><td colspan="3" style="font-style:italic;">Thy cart is empty emperor.</td></tr>`;
+		})
+
+	g_divAddItem.innerHTML = `<div class='container'>
+										<div class='row'>
+										<div class='col-md-6'>
+											<form class='form-horizontal' onsubmit="return validate('addItem');">
+								<div class='form-group'>
+								 <label class='control-label col-md-3' for='itemName'>Item Name</label>
+		                         <div class='col-md-6'><input type='text' id='itemName' class='form-control'></div>
+								</div>
+								<div class='form-group'>
+								 <label class='control-label col-md-3'></label>
+		                         <div class='col-md-6'><input class='btn btn-sm btn-primary' value='Add Item' type='submit'> <input  class='btn btn-sm btn-default' value='Clear' type='reset'></div>
+								</div>
+							  </form>
+							  	</div>
+							  	</div>
+							  	</div>`;
+
+	g_divAddStore.innerHTML = `<div class='container'>
+										<div class='row'>
+										<div class='col-md-6'>
+										<form class='form-horizontal' onsubmit="return validate('addStore');">
+								<div class='form-group'>
+								 <label class='control-label col-md-3' for='storeName'>Store Name</label>
+		                         <div class='col-md-6'><input type='text' id='storeName' class='form-control'></div>
+								</div>
+								<div class='form-group'>
+								 <label class='control-label col-md-3'></label>
+		                         <div class='col-md-6'><input class='btn btn-sm btn-primary' value='Add Store' type='submit'> <input  class='btn btn-sm btn-default' value='Clear' type='reset'></div>
+								</div>
+							  </form></div></div></div>`;
+
+	}
+
+	var listStores = function (stores){
+								var idx = 1;
+								var body = "";
+								
+								body += "<tr><td colspan='3' style='font-weight:bold; text-align: center; background: lightgray'>My Stores</td></tr>";
+												
+								for(let s in stores){
+									let store = stores[s];
+									body += `<tr>
+									          <td>${idx}</td><td>${store.name}</td>
+									          <td><a href='#' onclick="edit('stores', ${store.rowid}); return false;">Edit</a> 
+									          	  <a href='#' class='text-danger' onclick="remove('stores', ${store.rowid}); return false;">Delete</a></td>
+												</tr>`;
+									idx++
+								}
+								
+								if ( ! stores) {
+									body += "<tr><td colspan='3' style='font-style:italic; text-align: center'>You have not added any stores.</td></tr>";
+								}
+								
+								document.querySelector('#tableStores').innerHTML = body;	
+					}
+					
+	var listItems =  function ( items ) {
+									var idx = 1;
+									var body = "";
+									
+									body += "<tr><td colspan='3' style='font-weight:bold; text-align: center; background: lightgray'>My Items</td></tr>";
+													
+									for(let i in items){
+										let item = items[i];
+										body += `<tr>
+										          <td>${idx}</td><td>${item.name}</td>
+										          <td><a href='#' onclick="edit('items', ${item.rowid}); return false;">Edit</a> 
+										              <a href='#' class='text-danger' onclick="remove('items', ${item.rowid}); return false;">Delete</a></td>
+													</tr>`;
+										idx++
+									}
+									
+									if ( ! items) {
+										body += "<tr><td colspan='3' style='font-style:italic; text-align: center'>You have not added any items.</td></tr>";
+									}
+									
+									document.querySelector('#tableItems').tBodies[0].innerHTML = body;	
+						}
+																				
+	// window onLoad
+  window.addEventListener('load', function(){
+		    g_tableCart   = document.getElementById('tableCart');	
+		    g_divAddCart  = document.getElementById('divAddCart');
+		    g_divAddItem  = document.getElementById('divAddItem');	
+			 g_divEditItem = document.getElementById('divEditItem');
+		    g_divProps    = document.getElementById('divProps');
+		    g_divEditCartItem = document.getElementById('divEditCartItem');
+		    dataProcWork  = document.getElementById('dataProcWork');
+			 g_divRepo     = document.getElementById('divRepo');
+			 
+		    g_divAddStore  = document.getElementById('divAddStore');	
+			 g_divEditStore = document.getElementById('divEditStore');
+		
+			 refreshAll()
+			
+			$('.fancybox').fancybox({helpers: { overlay: { closeClick: false}}});	
+			
+			// show my stores 
+			$('.fancybox2').fancybox({
+												helpers: { overlay: { closeClick: false}},
+												beforeLoad: function () {
+		
+																	g_db.list('stores', listStores);																		
+																	g_db.list('items',  listItems);	
+																	}
+											})
+				
+			// show my stores 
+			
+			$('.fancybox3').fancybox({ title: 'Export',
+												helpers: { overlay: { closeClick: false}},
+												beforeLoad: function () {
+																	let tables = ['cart', 'items', 'stores']
+																	var data = {}
+																	
+																	g_db.rawdb().transaction(function (tx) {
+																		tables.forEach(table=>{
+																		  tx.executeSql(`SELECT rowid, * FROM ${table}`, [], function(tx, results){
+																				let rows = results.rows;
+																				let len = rows.length
+		
+																				data[table] = []
+																	
+																				for(let idx=0; idx < len; idx++){
+																					data[table].push(rows[idx])
+																				}
+																			});
+																		
+																			
+																	    })
+
+																	});
+
+																	
+																		console.log('Your data',data)
+				
+																		document.getElementById('json').textContent = JSON.stringify(data)
+																		
+																	}
+											})				
+  }, false);
+
+ </script>
+ <script src='lib/fancybox/source/jquery.fancybox.js'></script>
+ </body>
+</html>
